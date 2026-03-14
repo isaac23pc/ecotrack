@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Contact{% endblock %}
+{% block content %}
+<div style="max-width:720px;margin:0 auto;padding:4rem 2rem;">
+  <h1 style="font-family:var(--font-head);font-size:2.4rem;font-weight:800;margin-bottom:.5rem;">
+    Get in <span style="color:var(--green-600);">Touch</span>
+  </h1>
+  <p style="color:var(--text-secondary);margin-bottom:2.5rem;">Have a question or need support? We're here to help.</p>
+
+  <div class="grid-2" style="margin-bottom:2rem;">
+    {% for icon, label, value in [('map-pin','Address','Cotonou, Littoral, Bénin'),('mail','Email','support@ecotrack.bj'),('phone','Phone','+229 21 30 00 00'),('clock','Hours','Mon–Fri 8:00 – 18:00')] %}
+    <div class="card"><div class="card-body" style="display:flex;gap:12px;align-items:flex-start;">
+      <div style="width:38px;height:38px;background:var(--green-100);color:var(--green-700);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i data-lucide="{{ icon }}" class="icon-sm"></i>
+      </div>
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600;margin-bottom:2px;">{{ label }}</div>
+        <div class="font-semibold">{{ value }}</div>
+      </div>
+    </div></div>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">Send a Message</div></div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input type="text" class="form-control" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" placeholder="you@example.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subject</label>
+        <input type="text" class="form-control" placeholder="How can we help?">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Message</label>
+        <textarea class="form-control" style="min-height:120px;" placeholder="Describe your issue…"></textarea>
+      </div>
+      <button type="button" class="btn btn-primary btn-lg"
+        onclick="this.innerHTML='<i data-lucide=\'check\' style=\'width:16px;height:16px;\'></i> Message Sent!';lucide.createIcons();">
+        <i data-lucide="send" class="icon-sm"></i> Send Message
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}

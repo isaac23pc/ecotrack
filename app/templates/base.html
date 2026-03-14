@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}EcoTrack{% endblock %} — Smart Waste Scheduling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- PUBLIC NAV (shown on non-dashboard pages) -->
+{% block navbar %}
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="{{ url_for('main.home') }}" class="nav-brand">
+      <div class="brand-icon"><i data-lucide="recycle" class="icon-sm"></i></div>
+      <span>EcoTrack</span>
+    </a>
+    <div class="nav-links">
+      <a href="{{ url_for('main.home') }}" class="nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">Home</a>
+      <a href="{{ url_for('main.about') }}" class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">About</a>
+      <a href="{{ url_for('main.contact') }}" class="nav-link {% if request.endpoint == 'main.contact' %}active{% endif %}">Contact</a>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('auth.logout') }}" class="nav-link">Sign Out</a>
+        <a href="#" class="btn-nav">Dashboard</a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="nav-link">Sign In</a>
+        <a href="{{ url_for('auth.register') }}" class="btn-nav">Get Started</a>
+      {% endif %}
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleNav()">
+      <i data-lucide="menu" class="icon-sm"></i>
+    </button>
+  </div>
+</nav>
+{% endblock %}
+
+<!-- FLASH MESSAGES -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-container" id="flash-container">
+    {% for cat, msg in messages %}
+    <div class="flash flash-{{ cat }}">
+      <i data-lucide="{% if cat == 'success' %}check-circle{% elif cat == 'danger' %}x-circle{% elif cat == 'warning' %}alert-triangle{% else %}info{% endif %}" class="icon-xs"></i>
+      <span>{{ msg }}</span>
+      <button onclick="this.parentElement.remove()" class="flash-close"><i data-lucide="x" class="icon-xs"></i></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<script>
+  lucide.createIcons();
+  function toggleNav() {
+    document.querySelector('.nav-links').classList.toggle('open');
+  }
+  // Auto-dismiss flashes
+  setTimeout(() => {
+    document.querySelectorAll('.flash').forEach(f => {
+      f.style.opacity = '0'; f.style.transform = 'translateY(-8px)';
+      setTimeout(() => f.remove(), 300);
+    });
+  }, 4000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,92 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Activity Logs{% endblock %}
+{% block page_title %}Activity Logs{% endblock %}
+{% block notif_url %}{{ url_for('admin.logs') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="sidebar-item"><i data-lucide="layout-dashboard" class="icon-sm"></i><span>Dashboard</span></a>
+<a href="{{ url_for('admin.users') }}" class="sidebar-item"><i data-lucide="users" class="icon-sm"></i><span>Users</span></a>
+<a href="{{ url_for('admin.pickups') }}" class="sidebar-item"><i data-lucide="calendar" class="icon-sm"></i><span>Pickups</span></a>
+<a href="{{ url_for('admin.unassigned_pickups') }}" class="sidebar-item"><i data-lucide="alert-circle" class="icon-sm"></i><span>Unassigned</span></a>
+<a href="{{ url_for('admin.collectors') }}" class="sidebar-item"><i data-lucide="truck" class="icon-sm"></i><span>Collectors</span></a>
+<a href="{{ url_for('admin.reports') }}" class="sidebar-item"><i data-lucide="bar-chart-2" class="icon-sm"></i><span>Reports</span></a>
+<a href="{{ url_for('admin.logs') }}" class="sidebar-item active"><i data-lucide="scroll-text" class="icon-sm"></i><span>Activity Logs</span></a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Activity Logs</div>
+    <div class="page-header-sub">All system events — page {{ pagination.page }} of {{ pagination.pages }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Time</th><th>User</th><th>Action</th><th>Details</th><th>IP</th></tr>
+      </thead>
+      <tbody>
+        {% for log in pagination.items %}
+        <tr>
+          <td class="text-xs" style="color:var(--text-muted);white-space:nowrap;">
+            {{ log.created_at | datefmt('%b %d %H:%M') }}
+          </td>
+          <td class="text-sm font-semibold">
+            {{ log.user.full_name if log.user else 'System' }}
+          </td>
+          <td>
+            <span class="badge
+              {% if 'REGISTER' in log.action or 'CREATE' in log.action %}badge-success
+              {% elif 'DELETE' in log.action or 'CANCEL' in log.action %}badge-danger
+              {% elif 'LOGIN' in log.action %}badge-info
+              {% elif 'UPDATE' in log.action or 'ASSIGN' in log.action %}badge-warning
+              {% else %}badge-secondary{% endif %}
+              text-xs">
+              {{ log.action | replace('_', ' ') }}
+            </span>
+          </td>
+          <td class="text-sm" style="color:var(--text-secondary);max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            {{ log.details or '—' }}
+          </td>
+          <td class="text-xs" style="color:var(--text-muted);">
+            {{ log.ip_address or '—' }}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="scroll-text" class="icon-lg"></i></div>
+            <div class="empty-title">No activity yet</div>
+          </div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if pagination.pages > 1 %}
+<div class="pagination">
+  {% if pagination.has_prev %}
+    <a href="{{ url_for('admin.logs', page=pagination.prev_num) }}" class="page-link">
+      <i data-lucide="chevron-left" class="icon-xs"></i>
+    </a>
+  {% endif %}
+  {% for p in pagination.iter_pages() %}
+    {% if p %}
+      <a href="{{ url_for('admin.logs', page=p) }}"
+         class="page-link {% if p == pagination.page %}active{% endif %}">{{ p }}</a>
+    {% else %}
+      <span class="page-link" style="border:none;">…</span>
+    {% endif %}
+  {% endfor %}
+  {% if pagination.has_next %}
+    <a href="{{ url_for('admin.logs', page=pagination.next_num) }}" class="page-link">
+      <i data-lucide="chevron-right" class="icon-xs"></i>
+    </a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

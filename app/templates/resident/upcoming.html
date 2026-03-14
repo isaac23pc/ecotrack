@@ -1,0 +1,93 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Upcoming Pickups{% endblock %}
+{% block page_title %}Upcoming Pickups{% endblock %}
+{% block notif_url %}{{ url_for('resident.notifications') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('resident.dashboard') }}" class="sidebar-item"><i data-lucide="layout-dashboard" class="icon-sm"></i><span>Dashboard</span></a>
+<a href="{{ url_for('resident.schedule') }}" class="sidebar-item"><i data-lucide="calendar-plus" class="icon-sm"></i><span>Schedule Pickup</span></a>
+<a href="{{ url_for('resident.upcoming') }}" class="sidebar-item active"><i data-lucide="clock" class="icon-sm"></i><span>Upcoming</span></a>
+<a href="{{ url_for('resident.history') }}" class="sidebar-item"><i data-lucide="history" class="icon-sm"></i><span>History</span></a>
+<a href="{{ url_for('resident.notifications') }}" class="sidebar-item">
+  <i data-lucide="bell" class="icon-sm"></i><span>Notifications</span>
+  {% if unread > 0 %}<span class="badge-pill">{{ unread }}</span>{% endif %}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-title">Upcoming Pickups</div>
+  <a href="{{ url_for('resident.schedule') }}" class="btn btn-primary">
+    <i data-lucide="plus" class="icon-sm"></i> New Pickup
+  </a>
+</div>
+
+{% if pickups %}
+<div style="display:flex;flex-direction:column;gap:.75rem;">
+  {% for p in pickups %}
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div style="width:48px;height:48px;border-radius:var(--radius);
+            background:{% if p.waste_type_obj.name == 'Household' %}var(--gray-100){% elif p.waste_type_obj.name == 'Recyclable' %}var(--blue-50){% elif p.waste_type_obj.name == 'Organic' %}var(--green-100){% else %}var(--red-50){% endif %};
+            display:flex;align-items:center;justify-content:center;
+            color:{% if p.waste_type_obj.name == 'Household' %}var(--gray-600){% elif p.waste_type_obj.name == 'Recyclable' %}var(--blue-600){% elif p.waste_type_obj.name == 'Organic' %}var(--green-700){% else %}var(--red-600){% endif %};">
+            <i data-lucide="{{ p.waste_type_obj.icon if p.waste_type_obj else 'trash-2' }}" class="icon-md"></i>
+          </div>
+          <div>
+            <div class="font-semibold" style="margin-bottom:2px;">
+              {{ p.waste_type_obj.name if p.waste_type_obj else '—' }} Pickup
+            </div>
+            <div class="text-sm" style="color:var(--text-secondary);">
+              <i data-lucide="calendar" class="icon-xs" style="vertical-align:middle;"></i>
+              {{ p.pickup_date | datefmt }} &nbsp;·&nbsp;
+              <i data-lucide="clock" class="icon-xs" style="vertical-align:middle;"></i>
+              {{ p.time_slot | timefmt }}
+            </div>
+            <div class="text-sm" style="color:var(--text-muted);margin-top:2px;">
+              <i data-lucide="map-pin" class="icon-xs" style="vertical-align:middle;"></i>
+              {{ p.address }}
+            </div>
+            {% if p.collector %}
+            <div class="text-xs" style="color:var(--text-muted);margin-top:3px;">
+              <i data-lucide="truck" class="icon-xs" style="vertical-align:middle;"></i>
+              Collector: {{ p.collector.full_name }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="badge {{ p.status_badge_class }}">{{ p.status | replace('_',' ') | title }}</span>
+          {% if p.status in ['pending', 'scheduled'] %}
+          <form method="POST" action="{{ url_for('resident.cancel', pickup_id=p.id) }}"
+                onsubmit="return confirm('Cancel this pickup?');">
+            <button type="submit" class="btn btn-danger btn-sm">
+              <i data-lucide="x" class="icon-xs"></i> Cancel
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% if p.special_instructions %}
+      <div style="margin-top:.75rem;padding:.6rem .75rem;background:var(--gray-50);border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">
+        <i data-lucide="message-square" class="icon-xs" style="vertical-align:middle;"></i>
+        {{ p.special_instructions }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card"><div class="card-body">
+  <div class="empty-state">
+    <div class="empty-icon"><i data-lucide="calendar" class="icon-lg"></i></div>
+    <div class="empty-title">No upcoming pickups</div>
+    <div class="empty-sub">
+      <a href="{{ url_for('resident.schedule') }}" style="color:var(--green-600);">Schedule your first pickup →</a>
+    </div>
+  </div>
+</div></div>
+{% endif %}
+{% endblock %}

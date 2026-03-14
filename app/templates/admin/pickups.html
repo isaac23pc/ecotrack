@@ -1,0 +1,188 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Manage Pickups{% endblock %}
+{% block page_title %}Pickup Schedules{% endblock %}
+{% block notif_url %}{{ url_for('admin.logs') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="sidebar-item"><i data-lucide="layout-dashboard" class="icon-sm"></i><span>Dashboard</span></a>
+<a href="{{ url_for('admin.users') }}" class="sidebar-item"><i data-lucide="users" class="icon-sm"></i><span>Users</span></a>
+<a href="{{ url_for('admin.pickups') }}" class="sidebar-item active"><i data-lucide="calendar" class="icon-sm"></i><span>Pickups</span></a>
+<a href="{{ url_for('admin.unassigned_pickups') }}" class="sidebar-item"><i data-lucide="alert-circle" class="icon-sm"></i><span>Unassigned</span></a>
+<a href="{{ url_for('admin.collectors') }}" class="sidebar-item"><i data-lucide="truck" class="icon-sm"></i><span>Collectors</span></a>
+<a href="{{ url_for('admin.reports') }}" class="sidebar-item"><i data-lucide="bar-chart-2" class="icon-sm"></i><span>Reports</span></a>
+<a href="{{ url_for('admin.logs') }}" class="sidebar-item"><i data-lucide="scroll-text" class="icon-sm"></i><span>Activity Logs</span></a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">All Pickups</div>
+    <div class="page-header-sub">{{ pagination.total }} total requests</div>
+  </div>
+  <a href="{{ url_for('admin.unassigned_pickups') }}" class="btn btn-primary">
+    <i data-lucide="alert-circle" class="icon-sm"></i> Unassigned
+  </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-6">
+  <div class="card-body" style="padding:.75rem 1.25rem;">
+    <form method="GET" action="{{ url_for('admin.pickups') }}" class="flex gap-3 items-center flex-wrap">
+      <select name="status" class="form-control" style="width:150px;">
+        <option value="">All Statuses</option>
+        {% for s in ['pending','scheduled','in_progress','completed','missed','cancelled','delayed'] %}
+        <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s | replace('_',' ') | title }}</option>
+        {% endfor %}
+      </select>
+      <select name="waste_type_id" class="form-control" style="width:150px;">
+        <option value="">All Waste Types</option>
+        {% for wt in waste_types %}
+        <option value="{{ wt.id }}">{{ wt.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="collector_id" class="form-control" style="width:180px;">
+        <option value="">All Collectors</option>
+        {% for c in collectors %}
+        <option value="{{ c.id }}">{{ c.full_name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-secondary"><i data-lucide="filter" class="icon-sm"></i> Filter</button>
+      <a href="{{ url_for('admin.pickups') }}" class="btn btn-outline">Clear</a>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Resident</th><th>Waste Type</th><th>Date & Slot</th>
+          <th>Address</th><th>Collector</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in pagination.items %}
+        <tr>
+          <td class="text-xs" style="color:var(--text-muted);">#{{ p.id }}</td>
+          <td class="font-semibold">{{ p.resident.full_name }}</td>
+          <td>
+            <span class="badge {% if p.waste_type_obj %}
+              {% if p.waste_type_obj.name == 'Household' %}badge-secondary
+              {% elif p.waste_type_obj.name == 'Recyclable' %}badge-info
+              {% elif p.waste_type_obj.name == 'Organic' %}badge-success
+              {% else %}badge-danger{% endif %}
+            {% endif %}">
+              {{ p.waste_type_obj.name if p.waste_type_obj else '—' }}
+            </span>
+          </td>
+          <td>
+            <div class="font-semibold">{{ p.pickup_date | datefmt }}</div>
+            <div class="text-xs" style="color:var(--text-muted);">{{ p.time_slot | timefmt }}</div>
+          </td>
+          <td class="text-sm" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-secondary);">
+            {{ p.address }}
+          </td>
+          <td>
+            {% if p.collector %}
+              {{ p.collector.full_name }}
+            {% else %}
+              <span style="color:var(--text-muted);">Unassigned</span>
+            {% endif %}
+          </td>
+          <td><span class="badge {{ p.status_badge_class }}">{{ p.status | replace('_',' ') | title }}</span></td>
+          <td>
+            <div class="flex gap-2">
+              <!-- Assign Collector -->
+              <button class="btn btn-outline btn-sm" onclick="showAssign({{ p.id }}, '{{ p.resident.full_name }}')"
+                title="Assign Collector">
+                <i data-lucide="user-check" class="icon-xs"></i>
+              </button>
+              <!-- Update Status -->
+              <button class="btn btn-outline btn-sm" onclick="showStatus({{ p.id }})" title="Update Status">
+                <i data-lucide="refresh-cw" class="icon-xs"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8">
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="calendar" class="icon-lg"></i></div>
+            <div class="empty-title">No pickups found</div>
+          </div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if pagination.pages > 1 %}
+<div class="pagination">
+  {% if pagination.has_prev %}<a href="{{ url_for('admin.pickups', page=pagination.prev_num, status=status) }}" class="page-link"><i data-lucide="chevron-left" class="icon-xs"></i></a>{% endif %}
+  {% for p in pagination.iter_pages() %}
+    {% if p %}<a href="{{ url_for('admin.pickups', page=p, status=status) }}" class="page-link {% if p==pagination.page %}active{% endif %}">{{ p }}</a>{% else %}<span class="page-link" style="border:none">…</span>{% endif %}
+  {% endfor %}
+  {% if pagination.has_next %}<a href="{{ url_for('admin.pickups', page=pagination.next_num, status=status) }}" class="page-link"><i data-lucide="chevron-right" class="icon-xs"></i></a>{% endif %}
+</div>
+{% endif %}
+
+<!-- Assign Modal -->
+<div id="assign-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:var(--radius-xl);padding:2rem;max-width:420px;width:90%;box-shadow:var(--shadow-md);">
+    <div class="flex items-center justify-between mb-4">
+      <h3 style="font-family:var(--font-head);font-weight:700;">Assign Collector</h3>
+      <button onclick="document.getElementById('assign-modal').style.display='none'" class="btn-icon"><i data-lucide="x" class="icon-sm"></i></button>
+    </div>
+    <p class="text-sm mb-4" style="color:var(--text-secondary);">Pickup for <strong id="assign-resident"></strong></p>
+    <form method="POST" id="assign-form">
+      <div class="form-group">
+        <label class="form-label">Select Collector</label>
+        <select name="collector_id" class="form-control" required>
+          <option value="">— Choose —</option>
+          {% for c in collectors %}
+          <option value="{{ c.id }}">{{ c.full_name }} {% if c.zone %}({{ c.zone }}){% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block"><i data-lucide="user-check" class="icon-sm"></i> Assign</button>
+    </form>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div id="status-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:var(--radius-xl);padding:2rem;max-width:380px;width:90%;box-shadow:var(--shadow-md);">
+    <div class="flex items-center justify-between mb-4">
+      <h3 style="font-family:var(--font-head);font-weight:700;">Update Status</h3>
+      <button onclick="document.getElementById('status-modal').style.display='none'" class="btn-icon"><i data-lucide="x" class="icon-sm"></i></button>
+    </div>
+    <form method="POST" id="status-form">
+      <div class="form-group">
+        <label class="form-label">New Status</label>
+        <select name="status" class="form-control" required>
+          {% for s in ['in_progress','completed','missed','cancelled','delayed'] %}
+          <option value="{{ s }}">{{ s | replace('_',' ') | title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block"><i data-lucide="check" class="icon-sm"></i> Update</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showAssign(id, resident) {
+  document.getElementById('assign-resident').textContent = resident;
+  document.getElementById('assign-form').action = `/admin/pickups/${id}/assign`;
+  document.getElementById('assign-modal').style.display = 'flex';
+}
+function showStatus(id) {
+  document.getElementById('status-form').action = `/admin/pickups/${id}/status`;
+  document.getElementById('status-modal').style.display = 'flex';
+}
+</script>
+{% endblock %}

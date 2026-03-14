@@ -1,0 +1,72 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Collectors{% endblock %}
+{% block page_title %}Collector Performance{% endblock %}
+{% block notif_url %}{{ url_for('admin.logs') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="sidebar-item"><i data-lucide="layout-dashboard" class="icon-sm"></i><span>Dashboard</span></a>
+<a href="{{ url_for('admin.users') }}" class="sidebar-item"><i data-lucide="users" class="icon-sm"></i><span>Users</span></a>
+<a href="{{ url_for('admin.pickups') }}" class="sidebar-item"><i data-lucide="calendar" class="icon-sm"></i><span>Pickups</span></a>
+<a href="{{ url_for('admin.unassigned_pickups') }}" class="sidebar-item"><i data-lucide="alert-circle" class="icon-sm"></i><span>Unassigned</span></a>
+<a href="{{ url_for('admin.collectors') }}" class="sidebar-item active"><i data-lucide="truck" class="icon-sm"></i><span>Collectors</span></a>
+<a href="{{ url_for('admin.reports') }}" class="sidebar-item"><i data-lucide="bar-chart-2" class="icon-sm"></i><span>Reports</span></a>
+<a href="{{ url_for('admin.logs') }}" class="sidebar-item"><i data-lucide="scroll-text" class="icon-sm"></i><span>Activity Logs</span></a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-title">Collectors — Today</div>
+  <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">
+    <i data-lucide="user-plus" class="icon-sm"></i> Add Collector
+  </a>
+</div>
+
+{% if not collector_stats %}
+<div class="card"><div class="card-body">
+  <div class="empty-state">
+    <div class="empty-icon"><i data-lucide="truck" class="icon-lg"></i></div>
+    <div class="empty-title">No collectors yet</div>
+    <div class="empty-sub"><a href="{{ url_for('admin.create_user') }}" style="color:var(--green-600);">Add your first collector</a></div>
+  </div>
+</div></div>
+{% else %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Collector</th><th>Zone</th><th>Today's Tasks</th><th>Completed</th><th>Progress</th><th>Efficiency</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for cs in collector_stats %}
+        <tr>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="user-avatar" style="width:30px;height:30px;font-size:11px;background:var(--blue-50);color:var(--blue-700);">{{ cs.collector.initials }}</div>
+              <span class="font-semibold">{{ cs.collector.full_name }}</span>
+            </div>
+          </td>
+          <td>{{ cs.collector.zone or '—' }}</td>
+          <td>{{ cs.total_today }}</td>
+          <td style="color:var(--green-700);font-weight:600;">{{ cs.done_today }}</td>
+          <td style="width:140px;">
+            <div class="progress">
+              <div class="progress-bar {% if cs.pct >= 80 %}{% elif cs.pct >= 50 %}amber{% else %}red{% endif %}"
+                style="width:{{ cs.pct }}%;"></div>
+            </div>
+          </td>
+          <td>
+            <span class="badge {% if cs.pct >= 80 %}badge-success{% elif cs.pct >= 50 %}badge-warning{% else %}badge-danger{% endif %}">
+              {{ cs.pct }}%
+            </span>
+          </td>
+          <td>
+            <a href="{{ url_for('admin.edit_user', user_id=cs.collector.id) }}" class="btn btn-outline btn-sm">
+              <i data-lucide="pencil" class="icon-xs"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

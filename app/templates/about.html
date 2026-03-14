@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<div style="max-width:900px;margin:0 auto;padding:4rem 2rem;">
+  <div style="text-align:center;margin-bottom:3rem;">
+    <div class="hero-badge" style="display:inline-flex;margin-bottom:1rem;">
+      <i data-lucide="leaf" class="icon-xs"></i> Our Mission
+    </div>
+    <h1 style="font-family:var(--font-head);font-size:2.8rem;font-weight:800;margin-bottom:1rem;">
+      Building Cleaner Cities,<br><span style="color:var(--green-600);">Together</span>
+    </h1>
+    <p style="color:var(--text-secondary);font-size:1.05rem;max-width:600px;margin:0 auto;line-height:1.8;">
+      EcoTrack was founded with a simple vision: make waste management so effortless that every citizen participates. We believe clean cities start with smart systems and engaged communities.
+    </p>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:3rem;">
+    <div class="card"><div class="card-body">
+      <div style="width:40px;height:40px;background:var(--green-100);color:var(--green-700);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;">
+        <i data-lucide="target" class="icon-md"></i>
+      </div>
+      <div class="feature-title">Our Mission</div>
+      <div class="feature-desc">Reduce missed waste collections to zero and make recycling the default for every household.</div>
+    </div></div>
+    <div class="card"><div class="card-body">
+      <div style="width:40px;height:40px;background:var(--blue-50);color:var(--blue-600);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;">
+        <i data-lucide="eye" class="icon-md"></i>
+      </div>
+      <div class="feature-title">Our Vision</div>
+      <div class="feature-desc">A world where waste is seen as a resource, tracked intelligently, and processed sustainably.</div>
+    </div></div>
+    <div class="card"><div class="card-body">
+      <div style="width:40px;height:40px;background:var(--amber-50);color:var(--amber-600);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;">
+        <i data-lucide="heart" class="icon-md"></i>
+      </div>
+      <div class="feature-title">Our Values</div>
+      <div class="feature-desc">Transparency, community ownership, environmental responsibility, and relentless improvement.</div>
+    </div></div>
+  </div>
+
+  <h2 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800;margin-bottom:1.5rem;text-align:center;">The Team</h2>
+  <div class="grid-4">
+    {% for name, role, color in [('Amara Kone','CEO & Co-founder','green'),('Bruno Teixeira','CTO','blue'),('Fatima Mensah','Head of Operations','amber'),('Kwame Osei','Lead Designer','purple')] %}
+    <div class="card" style="text-align:center;"><div class="card-body">
+      <div class="user-avatar" style="width:56px;height:56px;font-size:18px;margin:0 auto .75rem;
+        background:var(--{{ color }}-100);color:var(--{{ color }}-{% if color == 'green' %}700{% elif color == 'purple' %}600{% else %}600{% endif %});">
+        {{ name.split()[0][0] }}{{ name.split()[1][0] }}
+      </div>
+      <div class="font-semibold">{{ name }}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">{{ role }}</div>
+    </div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

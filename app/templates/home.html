@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-badge">
+    <i data-lucide="leaf" class="icon-xs"></i>
+    Smart Waste Management Platform
+  </div>
+  <h1>Waste Pickup,<br><span>Reimagined</span></h1>
+  <p class="hero-sub">Schedule waste collection effortlessly. Track pickups in real-time. Help keep your city clean with EcoTrack — the intelligent platform for residents, collectors, and municipalities.</p>
+  <div class="hero-btns">
+    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+      <i data-lucide="calendar-plus" class="icon-sm"></i>
+      Schedule a Pickup
+    </a>
+    <a href="{{ url_for('main.about') }}" class="btn btn-outline btn-lg">Learn More</a>
+  </div>
+</section>
+
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num">12,400+</div><div class="stat-label">Pickups Completed</div></div>
+    <div class="stat-item"><div class="stat-num">98.2%</div><div class="stat-label">On-time Rate</div></div>
+    <div class="stat-item"><div class="stat-num">340+</div><div class="stat-label">Active Collectors</div></div>
+    <div class="stat-item"><div class="stat-num">8 Zones</div><div class="stat-label">Covered</div></div>
+  </div>
+</div>
+
+<section class="section" style="background: var(--white);">
+  <div class="section-inner">
+    <div class="section-title">Everything You Need, <span>In One Place</span></div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background: var(--green-100); color: var(--green-700);"><i data-lucide="calendar" class="icon-lg"></i></div>
+        <div class="feature-title">Easy Scheduling</div>
+        <div class="feature-desc">Book pickups in seconds with our intuitive calendar. Choose your date, time slot, and waste type effortlessly.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: var(--blue-50); color: var(--blue-600);"><i data-lucide="map-pin" class="icon-lg"></i></div>
+        <div class="feature-title">Live Map Tracking</div>
+        <div class="feature-desc">See collector locations and get real-time updates on your pickup status directly on the map.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: var(--amber-50); color: var(--amber-600);"><i data-lucide="bell" class="icon-lg"></i></div>
+        <div class="feature-title">Smart Notifications</div>
+        <div class="feature-desc">Never miss a pickup. Get email and in-app reminders the day before and on pickup day.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: var(--purple-50); color: var(--purple-600);"><i data-lucide="bar-chart-2" class="icon-lg"></i></div>
+        <div class="feature-title">Analytics Dashboard</div>
+        <div class="feature-desc">Administrators get full visibility into collection performance, waste trends, and team metrics.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: var(--teal-50); color: var(--teal-600);"><i data-lucide="recycle" class="icon-lg"></i></div>
+        <div class="feature-title">Recycling Rewards</div>
+        <div class="feature-desc">Earn green points for proper waste separation. Redeem points for community and environmental benefits.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: var(--red-50); color: var(--red-600);"><i data-lucide="truck" class="icon-lg"></i></div>
+        <div class="feature-title">Route Optimization</div>
+        <div class="feature-desc">AI-powered routing ensures collectors take the most efficient path, saving time and fuel every day.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background: var(--gray-50);">
+  <div class="section-inner">
+    <div class="section-title">We Handle <span>All Waste Types</span></div>
+    <div class="waste-grid" style="max-width: 700px; margin: 0 auto;">
+      <div class="waste-card waste-household">
+        <div class="waste-card-icon"><i data-lucide="home" class="icon-md"></i></div>
+        <div class="waste-card-name">Household</div>
+        <div class="waste-card-desc">General domestic waste</div>
+      </div>
+      <div class="waste-card waste-recyclable">
+        <div class="waste-card-icon"><i data-lucide="recycle" class="icon-md"></i></div>
+        <div class="waste-card-name">Recyclable</div>
+        <div class="waste-card-desc">Plastic, paper, metal, glass</div>
+      </div>
+      <div class="waste-card waste-organic">
+        <div class="waste-card-icon"><i data-lucide="leaf" class="icon-md"></i></div>
+        <div class="waste-card-name">Organic</div>
+        <div class="waste-card-desc">Food and garden waste</div>
+      </div>
+      <div class="waste-card waste-hazardous">
+        <div class="waste-card-icon"><i data-lucide="alert-triangle" class="icon-md"></i></div>
+        <div class="waste-card-name">Hazardous</div>
+        <div class="waste-card-desc">Chemicals, batteries, e-waste</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <h2>Ready to Get Started?</h2>
+  <p>Join thousands of residents already using EcoTrack to keep their city clean.</p>
+  <a href="{{ url_for('auth.register') }}" class="btn-white">Create Free Account</a>
+</div>
+{% endblock %}

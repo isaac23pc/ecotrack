@@ -1,0 +1,171 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Manage Users{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block notif_url %}{{ url_for('admin.logs') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="sidebar-item"><i data-lucide="layout-dashboard" class="icon-sm"></i><span>Dashboard</span></a>
+<a href="{{ url_for('admin.users') }}" class="sidebar-item active"><i data-lucide="users" class="icon-sm"></i><span>Users</span></a>
+<a href="{{ url_for('admin.pickups') }}" class="sidebar-item"><i data-lucide="calendar" class="icon-sm"></i><span>Pickups</span></a>
+<a href="{{ url_for('admin.unassigned_pickups') }}" class="sidebar-item"><i data-lucide="alert-circle" class="icon-sm"></i><span>Unassigned</span></a>
+<a href="{{ url_for('admin.collectors') }}" class="sidebar-item"><i data-lucide="truck" class="icon-sm"></i><span>Collectors</span></a>
+<a href="{{ url_for('admin.reports') }}" class="sidebar-item"><i data-lucide="bar-chart-2" class="icon-sm"></i><span>Reports</span></a>
+<a href="{{ url_for('admin.logs') }}" class="sidebar-item"><i data-lucide="scroll-text" class="icon-sm"></i><span>Activity Logs</span></a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Users</div>
+    <div class="page-header-sub">{{ pagination.total }} total accounts</div>
+  </div>
+  <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">
+    <i data-lucide="user-plus" class="icon-sm"></i> Add User
+  </a>
+</div>
+
+<!-- Search -->
+<div class="card mb-6">
+  <div class="card-body" style="padding: .75rem 1.25rem;">
+    <form method="GET" action="{{ url_for('admin.users') }}" class="flex gap-3 items-center flex-wrap">
+      <div class="search-box">
+        <i data-lucide="search" class="icon-sm"></i>
+        <input type="text" name="q" class="form-control" placeholder="Search by name or email…" value="{{ q }}">
+      </div>
+      <select name="role" class="form-control" style="width:140px;">
+        <option value="">All Roles</option>
+        <option value="resident" {% if role_filter=='resident' %}selected{% endif %}>Resident</option>
+        <option value="collector" {% if role_filter=='collector' %}selected{% endif %}>Collector</option>
+        <option value="admin" {% if role_filter=='admin' %}selected{% endif %}>Admin</option>
+      </select>
+      <button type="submit" class="btn btn-secondary"><i data-lucide="filter" class="icon-sm"></i> Filter</button>
+      {% if q %}<a href="{{ url_for('admin.users') }}" class="btn btn-outline">Clear</a>{% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Zone</th>
+          <th>Joined</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in pagination.items %}
+        <tr>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="user-avatar" style="width:30px;height:30px;font-size:11px;">{{ user.initials }}</div>
+              <span class="font-semibold">{{ user.full_name }}</span>
+            </div>
+          </td>
+          <td style="color:var(--text-secondary);">{{ user.email }}</td>
+          <td style="color:var(--text-muted);">{{ user.phone or '—' }}</td>
+          <td><span class="badge role-badge-{{ user.role }}
+            {% if user.role == 'admin' %}badge-purple{% elif user.role == 'collector' %}badge-info{% else %}badge-success{% endif %}">
+            {{ user.role | capitalize }}</span></td>
+          <td style="color:var(--text-muted);">{{ user.zone or '—' }}</td>
+          <td class="text-sm" style="color:var(--text-muted);">{{ user.created_at | datefmt('%b %d, %Y') }}</td>
+          <td>
+            <span class="badge {% if user.is_active %}badge-success{% else %}badge-danger{% endif %}">
+              {{ 'Active' if user.is_active else 'Disabled' }}
+            </span>
+          </td>
+          <td>
+            <div class="flex gap-2">
+              <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-outline btn-sm">
+                <i data-lucide="pencil" class="icon-xs"></i>
+              </a>
+              <form method="POST" action="{{ url_for('admin.toggle_user', user_id=user.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-outline btn-sm" title="{{ 'Disable' if user.is_active else 'Enable' }}">
+                  <i data-lucide="{{ 'eye-off' if user.is_active else 'eye' }}" class="icon-xs"></i>
+                </button>
+              </form>
+              <!-- Reset password modal trigger -->
+              <button type="button" class="btn btn-outline btn-sm" onclick="showResetPw({{ user.id }}, '{{ user.full_name }}')" title="Reset Password">
+                <i data-lucide="key" class="icon-xs"></i>
+              </button>
+              {% if user.id != current_user.id %}
+              <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                onsubmit="return confirm('Delete {{ user.full_name }}? This cannot be undone.');">
+                <button type="submit" class="btn btn-danger btn-sm"><i data-lucide="trash-2" class="icon-xs"></i></button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8">
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="users" class="icon-lg"></i></div>
+            <div class="empty-title">No users found</div>
+            <div class="empty-sub">{% if q %}Try a different search term.{% else %}Create your first user above.{% endif %}</div>
+          </div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Pagination -->
+{% if pagination.pages > 1 %}
+<div class="pagination">
+  {% if pagination.has_prev %}
+    <a href="{{ url_for('admin.users', page=pagination.prev_num, q=q) }}" class="page-link">
+      <i data-lucide="chevron-left" class="icon-xs"></i>
+    </a>
+  {% endif %}
+  {% for p in pagination.iter_pages() %}
+    {% if p %}
+      <a href="{{ url_for('admin.users', page=p, q=q) }}" class="page-link {% if p == pagination.page %}active{% endif %}">{{ p }}</a>
+    {% else %}
+      <span class="page-link" style="border:none;">…</span>
+    {% endif %}
+  {% endfor %}
+  {% if pagination.has_next %}
+    <a href="{{ url_for('admin.users', page=pagination.next_num, q=q) }}" class="page-link">
+      <i data-lucide="chevron-right" class="icon-xs"></i>
+    </a>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Reset Password Modal -->
+<div id="reset-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:var(--radius-xl);padding:2rem;max-width:400px;width:90%;box-shadow:var(--shadow-md);">
+    <div class="flex items-center justify-between mb-4">
+      <h3 style="font-family:var(--font-head);font-weight:700;">Reset Password</h3>
+      <button onclick="document.getElementById('reset-modal').style.display='none'" class="btn-icon">
+        <i data-lucide="x" class="icon-sm"></i>
+      </button>
+    </div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1rem;">
+      Set a new password for <strong id="reset-name"></strong>.
+    </p>
+    <form method="POST" id="reset-form">
+      <div class="form-group">
+        <label class="form-label">New Password</label>
+        <input type="text" name="new_password" class="form-control" value="EcoTrack@2026" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">
+        <i data-lucide="key" class="icon-sm"></i> Reset Password
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showResetPw(userId, name) {
+  document.getElementById('reset-name').textContent = name;
+  document.getElementById('reset-form').action = `/admin/users/${userId}/reset-password`;
+  const m = document.getElementById('reset-modal');
+  m.style.display = 'flex';
+}
+</script>
+{% endblock %}

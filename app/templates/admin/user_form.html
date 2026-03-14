@@ -1,0 +1,82 @@
+{% extends "dashboard_base.html" %}
+{% block title %}{{ 'Edit' if user else 'Create' }} User{% endblock %}
+{% block page_title %}{{ 'Edit' if user else 'Create' }} User{% endblock %}
+{% block notif_url %}{{ url_for('admin.logs') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="sidebar-item"><i data-lucide="layout-dashboard" class="icon-sm"></i><span>Dashboard</span></a>
+<a href="{{ url_for('admin.users') }}" class="sidebar-item active"><i data-lucide="users" class="icon-sm"></i><span>Users</span></a>
+<a href="{{ url_for('admin.pickups') }}" class="sidebar-item"><i data-lucide="calendar" class="icon-sm"></i><span>Pickups</span></a>
+<a href="{{ url_for('admin.collectors') }}" class="sidebar-item"><i data-lucide="truck" class="icon-sm"></i><span>Collectors</span></a>
+<a href="{{ url_for('admin.reports') }}" class="sidebar-item"><i data-lucide="bar-chart-2" class="icon-sm"></i><span>Reports</span></a>
+<a href="{{ url_for('admin.logs') }}" class="sidebar-item"><i data-lucide="scroll-text" class="icon-sm"></i><span>Activity Logs</span></a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">{{ 'Edit User' if user else 'Create New User' }}</div>
+    <div class="page-header-sub">{{ user.email if user else 'Fill in the details below' }}</div>
+  </div>
+  <a href="{{ url_for('admin.users') }}" class="btn btn-outline">
+    <i data-lucide="arrow-left" class="icon-sm"></i> Back to Users
+  </a>
+</div>
+
+<div class="card" style="max-width:600px;">
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('admin.edit_user', user_id=user.id) if user else url_for('admin.create_user') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name <span class="required">*</span></label>
+          <input type="text" name="full_name" class="form-control" value="{{ user.full_name if user else '' }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="text" name="phone" class="form-control" value="{{ user.phone if user else '' }}" placeholder="+229 00 00 00 00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address <span class="required">*</span></label>
+        <input type="email" name="email" class="form-control" value="{{ user.email if user else '' }}" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Role <span class="required">*</span></label>
+          <select name="role" class="form-control" onchange="toggleZone(this.value)">
+            <option value="resident" {% if user and user.role=='resident' %}selected{% endif %}>Resident</option>
+            <option value="collector" {% if user and user.role=='collector' %}selected{% endif %}>Collector</option>
+            <option value="admin" {% if user and user.role=='admin' %}selected{% endif %}>Admin</option>
+          </select>
+        </div>
+        <div class="form-group" id="zone-group" style="{{ '' if not user or user.role == 'collector' else 'display:none;' }}">
+          <label class="form-label">Zone</label>
+          <input type="text" name="zone" class="form-control" value="{{ user.zone if user else '' }}" placeholder="e.g. Zone A">
+        </div>
+      </div>
+      {% if not user %}
+      <div class="form-group">
+        <label class="form-label">Initial Password <span class="required">*</span></label>
+        <input type="text" name="password" class="form-control" value="EcoTrack@2026" required>
+        <div class="form-hint">User should change this on first login.</div>
+      </div>
+      {% endif %}
+      <div class="flex gap-3 mt-4">
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="{{ 'save' if user else 'user-plus' }}" class="icon-sm"></i>
+          {{ 'Save Changes' if user else 'Create User' }}
+        </button>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function toggleZone(role) {
+  document.getElementById('zone-group').style.display = (role === 'collector') ? '' : 'none';
+}
+toggleZone(document.querySelector('[name=role]').value);
+</script>
+{% endblock %}

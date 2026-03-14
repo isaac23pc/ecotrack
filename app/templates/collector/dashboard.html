@@ -1,0 +1,190 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Collector Dashboard{% endblock %}
+{% block page_title %}My Tasks{% endblock %}
+{% block notif_url %}{{ url_for('collector.notifications') }}{% endblock %}
+
+{% block sidebar_nav %}
+<span class="sidebar-section-label">Work</span>
+<a href="{{ url_for('collector.dashboard') }}" class="sidebar-item {% if request.endpoint == 'collector.dashboard' %}active{% endif %}">
+  <i data-lucide="layout-dashboard" class="icon-sm"></i><span>Today's Tasks</span>
+  {% if pending | length > 0 %}<span class="badge-pill amber">{{ pending | length }}</span>{% endif %}
+</a>
+<a href="{{ url_for('collector.history') }}" class="sidebar-item {% if request.endpoint == 'collector.history' %}active{% endif %}">
+  <i data-lucide="history" class="icon-sm"></i><span>All Pickups</span>
+</a>
+<span class="sidebar-section-label">Account</span>
+<a href="{{ url_for('collector.notifications') }}" class="sidebar-item {% if request.endpoint == 'collector.notifications' %}active{% endif %}">
+  <i data-lucide="bell" class="icon-sm"></i><span>Notifications</span>
+  {% if unread > 0 %}<span class="badge-pill">{{ unread }}</span>{% endif %}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Today's Pickups</div>
+    <div class="page-header-sub">
+      {{ now.strftime('%A, %B %d, %Y') }} · Zone: {{ current_user.zone or 'Unassigned' }}
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <span class="badge badge-success" style="font-size:13px;padding:5px 12px;">
+      {{ done }}/{{ today_tasks | length }} Done
+    </span>
+  </div>
+</div>
+
+<!-- Progress -->
+{% if today_tasks %}
+{% set pct = ((done / today_tasks|length) * 100) | round(0) | int %}
+<div class="card mb-4">
+  <div class="card-body" style="padding:1rem 1.25rem;">
+    <div class="flex justify-between text-sm mb-2">
+      <span class="font-semibold">Daily Progress</span>
+      <span style="color:var(--text-muted);">{{ pct }}% complete</span>
+    </div>
+    <div class="progress" style="height:10px;">
+      <div class="progress-bar" style="width:{{ pct }}%;"></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Metrics -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-icon" style="background:var(--blue-50);color:var(--blue-600);"><i data-lucide="list-checks" class="icon-md"></i></div>
+    <div class="metric-label">Assigned Today</div>
+    <div class="metric-value">{{ today_tasks | length }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-icon" style="background:var(--green-100);color:var(--green-700);"><i data-lucide="check-circle" class="icon-md"></i></div>
+    <div class="metric-label">Completed</div>
+    <div class="metric-value" style="color:var(--green-700);">{{ done }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-icon" style="background:var(--amber-50);color:var(--amber-600);"><i data-lucide="clock" class="icon-md"></i></div>
+    <div class="metric-label">Remaining</div>
+    <div class="metric-value" style="color:var(--amber-600);">{{ pending | length }}</div>
+  </div>
+</div>
+
+<!-- Task List -->
+<div class="card">
+  <div class="card-header"><div class="card-title">Pickup Tasks</div></div>
+  <div class="card-body" style="padding:.5rem 0;">
+    {% if today_tasks %}
+      {% for i, task in today_tasks | enumerate %}
+      <div class="task-item" style="margin:0 .75rem .5rem;">
+        <div class="task-num {{ 'done' if task.status == 'completed' else '' }}">
+          {% if task.status == 'completed' %}
+            <i data-lucide="check" class="icon-xs"></i>
+          {% else %}
+            {{ loop.index }}
+          {% endif %}
+        </div>
+        <div class="task-info">
+          <div class="task-addr">{{ task.address }}</div>
+          <div class="task-meta">
+            <span>
+              <i data-lucide="{{ task.waste_type_obj.icon if task.waste_type_obj else 'trash-2' }}" class="icon-xs" style="vertical-align:middle;"></i>
+              {{ task.waste_type_obj.name if task.waste_type_obj else '—' }}
+            </span>
+            <span>
+              <i data-lucide="clock" class="icon-xs" style="vertical-align:middle;"></i>
+              {{ task.time_slot | timefmt }}
+            </span>
+            {% if task.resident %}
+            <span>
+              <i data-lucide="user" class="icon-xs" style="vertical-align:middle;"></i>
+              {{ task.resident.full_name }}
+            </span>
+            {% endif %}
+          </div>
+          {% if task.special_instructions %}
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">
+            <i data-lucide="message-square" class="icon-xs" style="vertical-align:middle;"></i>
+            {{ task.special_instructions }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="task-actions">
+          {% if task.status == 'completed' %}
+            <span class="badge badge-success">Done</span>
+          {% elif task.status == 'cancelled' %}
+            <span class="badge badge-secondary">Cancelled</span>
+          {% else %}
+            <!-- Mark Done -->
+            <form method="POST" action="{{ url_for('collector.update_task', pickup_id=task.id) }}" style="display:inline;">
+              <input type="hidden" name="status" value="completed">
+              <button type="submit" class="btn btn-primary btn-sm">
+                <i data-lucide="check" class="icon-xs"></i> Done
+              </button>
+            </form>
+            <!-- Report Problem -->
+            <button class="btn btn-danger btn-sm" onclick="showReport({{ task.id }}, '{{ task.address | replace("'", "\\'") }}')">
+              <i data-lucide="alert-triangle" class="icon-xs"></i>
+            </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="calendar-check" class="icon-lg"></i></div>
+      <div class="empty-title">No pickups assigned today</div>
+      <div class="empty-sub">Check back later or contact your admin.</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Report Problem Modal -->
+<div id="report-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:var(--radius-xl);padding:2rem;max-width:460px;width:90%;box-shadow:var(--shadow-md);">
+    <div class="flex items-center justify-between mb-4">
+      <h3 style="font-family:var(--font-head);font-weight:700;">Report a Problem</h3>
+      <button onclick="document.getElementById('report-modal').style.display='none'" class="btn-icon">
+        <i data-lucide="x" class="icon-sm"></i>
+      </button>
+    </div>
+    <p class="text-sm mb-3" style="color:var(--text-secondary);">Address: <strong id="report-addr"></strong></p>
+    <form method="POST" id="report-form">
+      <div class="form-group">
+        <label class="form-label">Problem Type</label>
+        <div class="problem-tags" id="problem-tags">
+          <div class="problem-tag" onclick="toggleTag(this)"><i data-lucide="barrier" class="icon-xs" style="vertical-align:middle;"></i> Blocked Access</div>
+          <div class="problem-tag" onclick="toggleTag(this)"><i data-lucide="x-circle" class="icon-xs" style="vertical-align:middle;"></i> Wrong Waste Type</div>
+          <div class="problem-tag" onclick="toggleTag(this)"><i data-lucide="user-x" class="icon-xs" style="vertical-align:middle;"></i> Nobody Home</div>
+          <div class="problem-tag" onclick="toggleTag(this)"><i data-lucide="alert-triangle" class="icon-xs" style="vertical-align:middle;"></i> Safety Hazard</div>
+          <div class="problem-tag" onclick="toggleTag(this)"><i data-lucide="trash" class="icon-xs" style="vertical-align:middle;"></i> Bin Overloaded</div>
+          <div class="problem-tag" onclick="toggleTag(this)"><i data-lucide="map-pin-off" class="icon-xs" style="vertical-align:middle;"></i> Wrong Address</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="issue_report" class="form-control" placeholder="Describe the problem…" id="report-desc"></textarea>
+      </div>
+      <input type="hidden" name="status" value="delayed">
+      <button type="submit" class="btn btn-danger btn-block">
+        <i data-lucide="send" class="icon-sm"></i> Submit Report
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showReport(id, addr) {
+  document.getElementById('report-addr').textContent = addr;
+  document.getElementById('report-form').action = `/collector/task/${id}/update`;
+  document.getElementById('report-modal').style.display = 'flex';
+}
+function toggleTag(el) {
+  el.classList.toggle('active');
+  const active = [...document.querySelectorAll('.problem-tag.active')].map(t => t.textContent.trim()).join(', ');
+  document.getElementById('report-desc').placeholder = active || 'Describe the problem…';
+}
+</script>
+{% endblock %}

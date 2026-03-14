@@ -1,0 +1,3 @@
+from .user_repository import UserRepository
+from .pickup_repository import PickupRepository
+from .support_repositories import NotificationRepository, WasteTypeRepository, ActivityLogRepository

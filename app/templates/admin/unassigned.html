@@ -1,0 +1,70 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Unassigned Pickups{% endblock %}
+{% block page_title %}Unassigned Pickups{% endblock %}
+{% block notif_url %}{{ url_for('admin.logs') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="sidebar-item"><i data-lucide="layout-dashboard" class="icon-sm"></i><span>Dashboard</span></a>
+<a href="{{ url_for('admin.users') }}" class="sidebar-item"><i data-lucide="users" class="icon-sm"></i><span>Users</span></a>
+<a href="{{ url_for('admin.pickups') }}" class="sidebar-item"><i data-lucide="calendar" class="icon-sm"></i><span>Pickups</span></a>
+<a href="{{ url_for('admin.unassigned_pickups') }}" class="sidebar-item active"><i data-lucide="alert-circle" class="icon-sm"></i><span>Unassigned</span></a>
+<a href="{{ url_for('admin.collectors') }}" class="sidebar-item"><i data-lucide="truck" class="icon-sm"></i><span>Collectors</span></a>
+<a href="{{ url_for('admin.reports') }}" class="sidebar-item"><i data-lucide="bar-chart-2" class="icon-sm"></i><span>Reports</span></a>
+<a href="{{ url_for('admin.logs') }}" class="sidebar-item"><i data-lucide="scroll-text" class="icon-sm"></i><span>Activity Logs</span></a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Unassigned Pickups</div>
+    <div class="page-header-sub">{{ pickups|length }} pending assignment</div>
+  </div>
+</div>
+
+{% if not pickups %}
+<div class="card"><div class="card-body">
+  <div class="empty-state">
+    <div class="empty-icon"><i data-lucide="check-circle" class="icon-lg"></i></div>
+    <div class="empty-title">All pickups are assigned</div>
+    <div class="empty-sub">Great work! No pending assignments right now.</div>
+  </div>
+</div></div>
+{% else %}
+<div style="display:flex;flex-direction:column;gap:.75rem;">
+  {% for p in pickups %}
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-warning"><i data-lucide="alert-circle" class="icon-xs"></i> Pending</span>
+            <span class="badge badge-secondary">#{{ p.id }}</span>
+            {% if p.waste_type_obj %}<span class="badge badge-info">{{ p.waste_type_obj.name }}</span>{% endif %}
+          </div>
+          <div class="font-semibold">{{ p.resident.full_name }}</div>
+          <div class="text-sm" style="color:var(--text-secondary);margin-top:2px;">
+            <i data-lucide="map-pin" class="icon-xs" style="vertical-align:middle;"></i> {{ p.address }}
+          </div>
+          <div class="text-sm" style="color:var(--text-muted);margin-top:2px;">
+            <i data-lucide="calendar" class="icon-xs" style="vertical-align:middle;"></i>
+            {{ p.pickup_date | datefmt }} &nbsp;·&nbsp; {{ p.time_slot | timefmt }}
+          </div>
+        </div>
+        <form method="POST" action="{{ url_for('admin.assign_collector', pickup_id=p.id) }}" class="flex gap-2 items-center">
+          <select name="collector_id" class="form-control" style="width:200px;" required>
+            <option value="">— Select Collector —</option>
+            {% for c in collectors %}
+            <option value="{{ c.id }}">{{ c.full_name }} {% if c.zone %}({{ c.zone }}){% endif %}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="user-check" class="icon-sm"></i> Assign
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

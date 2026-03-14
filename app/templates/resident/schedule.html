@@ -1,0 +1,149 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Schedule Pickup{% endblock %}
+{% block page_title %}Schedule a Pickup{% endblock %}
+{% block notif_url %}{{ url_for('resident.notifications') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('resident.dashboard') }}" class="sidebar-item"><i data-lucide="layout-dashboard" class="icon-sm"></i><span>Dashboard</span></a>
+<a href="{{ url_for('resident.schedule') }}" class="sidebar-item active"><i data-lucide="calendar-plus" class="icon-sm"></i><span>Schedule Pickup</span></a>
+<a href="{{ url_for('resident.upcoming') }}" class="sidebar-item"><i data-lucide="clock" class="icon-sm"></i><span>Upcoming</span></a>
+<a href="{{ url_for('resident.history') }}" class="sidebar-item"><i data-lucide="history" class="icon-sm"></i><span>History</span></a>
+<a href="{{ url_for('resident.notifications') }}" class="sidebar-item"><i data-lucide="bell" class="icon-sm"></i><span>Notifications</span>
+  {% if unread > 0 %}<span class="badge-pill">{{ unread }}</span>{% endif %}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Schedule a Pickup</div>
+    <div class="page-header-sub">Choose your waste type, date, and preferred time</div>
+  </div>
+</div>
+
+<form method="POST" action="{{ url_for('resident.schedule') }}" id="schedule-form">
+  <!-- Step 1: Waste Type -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+        <span style="width:24px;height:24px;background:var(--green-600);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">1</span>
+        Select Waste Type
+      </div>
+    </div>
+    <div class="card-body">
+      <input type="hidden" name="waste_type_id" id="waste-type-input" required>
+      <div class="waste-grid">
+        {% for wt in waste_types %}
+        <div class="waste-card {{ wt.color_class }}" onclick="selectWaste({{ wt.id }}, this)">
+          <div class="waste-card-icon">
+            <i data-lucide="{{ wt.icon }}" class="icon-md"></i>
+          </div>
+          <div class="waste-card-name">{{ wt.name }}</div>
+          <div class="waste-card-desc">{{ wt.description }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Date -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+        <span style="width:24px;height:24px;background:var(--green-600);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">2</span>
+        Choose Pickup Date
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="form-group" style="max-width:280px;">
+        <label class="form-label">Select Date <span class="required">*</span></label>
+        <input type="date" name="pickup_date" class="form-control" required
+               min="{{ now.strftime('%Y-%m-%d') }}" id="pickup-date">
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Time Slot -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+        <span style="width:24px;height:24px;background:var(--green-600);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">3</span>
+        Select Time Slot
+      </div>
+    </div>
+    <div class="card-body">
+      <input type="hidden" name="time_slot" id="time-slot-input" required>
+      <div class="time-slots">
+        {% for slot in time_slots %}
+        <div class="time-slot" onclick="selectSlot('{{ slot }}', this)">
+          <i data-lucide="clock" class="icon-xs" style="vertical-align:middle;"></i>
+          {{ slot | timefmt }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Address -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+        <span style="width:24px;height:24px;background:var(--green-600);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">4</span>
+        Address &amp; Instructions
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Pickup Address <span class="required">*</span></label>
+          <input type="text" name="address" class="form-control" placeholder="45 Rue de la Paix, Cotonou" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Landmark <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+          <input type="text" name="landmark" class="form-control" placeholder="Near the blue gate…">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Special Instructions <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+        <textarea name="special_instructions" class="form-control"
+          placeholder="e.g. Bins are inside the compound. Ring the bell on arrival."></textarea>
+      </div>
+
+      <div style="background:var(--green-50);border:1px solid var(--green-200);border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem;display:flex;gap:10px;align-items:flex-start;">
+        <i data-lucide="info" class="icon-sm" style="color:var(--green-600);flex-shrink:0;margin-top:1px;"></i>
+        <div style="font-size:13px;color:var(--green-800);">
+          You'll receive a confirmation notification once your pickup is confirmed. A collector will be assigned within 24 hours.
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg">
+        <i data-lucide="calendar-check" class="icon-sm"></i>
+        Confirm Pickup Request
+      </button>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectWaste(id, el) {
+  document.querySelectorAll('.waste-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('waste-type-input').value = id;
+}
+function selectSlot(slot, el) {
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('time-slot-input').value = slot;
+}
+document.getElementById('schedule-form').addEventListener('submit', function(e) {
+  if (!document.getElementById('waste-type-input').value) {
+    e.preventDefault(); alert('Please select a waste type.'); return;
+  }
+  if (!document.getElementById('time-slot-input').value) {
+    e.preventDefault(); alert('Please select a time slot.'); return;
+  }
+});
+</script>
+{% endblock %}

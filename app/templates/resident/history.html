@@ -1,0 +1,61 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Collection History{% endblock %}
+{% block page_title %}Collection History{% endblock %}
+{% block notif_url %}{{ url_for('resident.notifications') }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('resident.dashboard') }}" class="sidebar-item"><i data-lucide="layout-dashboard" class="icon-sm"></i><span>Dashboard</span></a>
+<a href="{{ url_for('resident.schedule') }}" class="sidebar-item"><i data-lucide="calendar-plus" class="icon-sm"></i><span>Schedule Pickup</span></a>
+<a href="{{ url_for('resident.upcoming') }}" class="sidebar-item"><i data-lucide="clock" class="icon-sm"></i><span>Upcoming</span></a>
+<a href="{{ url_for('resident.history') }}" class="sidebar-item active"><i data-lucide="history" class="icon-sm"></i><span>History</span></a>
+<a href="{{ url_for('resident.notifications') }}" class="sidebar-item">
+  <i data-lucide="bell" class="icon-sm"></i><span>Notifications</span>
+  {% if unread > 0 %}<span class="badge-pill">{{ unread }}</span>{% endif %}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-title">Collection History</div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Waste Type</th><th>Time Slot</th><th>Collector</th><th>Address</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for p in pickups %}
+        <tr>
+          <td class="font-semibold">{{ p.pickup_date | datefmt }}</td>
+          <td>
+            <span class="badge
+              {% if p.waste_type_obj.name == 'Household' %}badge-secondary
+              {% elif p.waste_type_obj.name == 'Recyclable' %}badge-info
+              {% elif p.waste_type_obj.name == 'Organic' %}badge-success
+              {% else %}badge-danger{% endif %}">
+              {{ p.waste_type_obj.name if p.waste_type_obj else '—' }}
+            </span>
+          </td>
+          <td class="text-sm" style="color:var(--text-muted);">{{ p.time_slot | timefmt }}</td>
+          <td class="text-sm">{{ p.collector.full_name if p.collector else '—' }}</td>
+          <td class="text-sm" style="color:var(--text-secondary);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            {{ p.address }}
+          </td>
+          <td><span class="badge {{ p.status_badge_class }}">{{ p.status | replace('_',' ') | title }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="history" class="icon-lg"></i></div>
+            <div class="empty-title">No history yet</div>
+            <div class="empty-sub">Your completed pickups will appear here.</div>
+          </div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

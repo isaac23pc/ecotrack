@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Admin Setup{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card" style="max-width:480px;">
+
+    <div class="auth-logo">
+      <div class="brand-icon" style="width:56px;height:56px;border-radius:14px;background:var(--green-700);">
+        <i data-lucide="shield-check" style="width:28px;height:28px;"></i>
+      </div>
+    </div>
+
+    <div class="auth-title">Create Admin Account</div>
+    <div class="auth-sub">Set up the system administrator for EcoTrack. This page is only accessible once.</div>
+
+    <div style="background:var(--amber-50);border:1px solid var(--amber-100);border-radius:var(--radius);
+                padding:.9rem 1rem;margin-bottom:1.5rem;display:flex;gap:10px;align-items:flex-start;">
+      <i data-lucide="alert-triangle" class="icon-sm" style="color:var(--amber-600);flex-shrink:0;margin-top:1px;"></i>
+      <p style="font-size:13px;color:var(--amber-700);margin:0;">
+        This admin account will have full system access. Use a strong password and keep it secure.
+        This setup page will be disabled after the account is created.
+      </p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.setup_admin') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name <span class="required">*</span></label>
+          <input type="text" name="full_name" class="form-control"
+                 placeholder="e.g. System Administrator" required autofocus>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="text" name="phone" class="form-control" placeholder="+229 00 00 00 00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address <span class="required">*</span></label>
+        <input type="email" name="email" class="form-control"
+               placeholder="admin@yourorganisation.com" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Password <span class="required">*</span></label>
+          <input type="password" name="password" class="form-control"
+                 placeholder="Min 8 characters" required id="pw">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password <span class="required">*</span></label>
+          <input type="password" name="confirm_password" class="form-control"
+                 placeholder="Repeat password" required id="pw2">
+        </div>
+      </div>
+
+      <!-- Password strength indicator -->
+      <div style="margin-bottom:1rem;">
+        <div class="progress" style="height:6px;">
+          <div id="pw-strength-bar" class="progress-bar" style="width:0%;transition:width .3s,background .3s;"></div>
+        </div>
+        <div id="pw-strength-label" style="font-size:12px;color:var(--text-muted);margin-top:4px;"></div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" id="submit-btn">
+        <i data-lucide="shield-check" class="icon-sm"></i> Create Admin Account
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const pw = document.getElementById('pw');
+const bar = document.getElementById('pw-strength-bar');
+const label = document.getElementById('pw-strength-label');
+
+pw.addEventListener('input', function() {
+  const v = this.value;
+  let score = 0;
+  if (v.length >= 8)  score++;
+  if (v.length >= 12) score++;
+  if (/[A-Z]/.test(v)) score++;
+  if (/[0-9]/.test(v)) score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+
+  const levels = [
+    { pct: '0%',   color: '',                    text: '' },
+    { pct: '25%',  color: 'var(--red-500)',       text: 'Weak' },
+    { pct: '50%',  color: 'var(--amber-500)',     text: 'Fair' },
+    { pct: '75%',  color: 'var(--blue-500)',      text: 'Good' },
+    { pct: '90%',  color: 'var(--green-500)',     text: 'Strong' },
+    { pct: '100%', color: 'var(--green-600)',     text: 'Very Strong' },
+  ];
+  const l = levels[Math.min(score, 5)];
+  bar.style.width = l.pct;
+  bar.style.background = l.color;
+  label.textContent = l.text;
+  label.style.color = l.color;
+});
+
+document.querySelector('form').addEventListener('submit', function(e) {
+  if (pw.value !== document.getElementById('pw2').value) {
+    e.preventDefault();
+    alert('Passwords do not match.');
+  }
+});
+</script>
+{% endblock %}
