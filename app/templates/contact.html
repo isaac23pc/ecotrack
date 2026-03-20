@@ -1,52 +1,184 @@
 {% extends "base.html" %}
-{% block title %}Contact{% endblock %}
+{% block title %}Contact EcoTrack{% endblock %}
 {% block content %}
-<div style="max-width:720px;margin:0 auto;padding:4rem 2rem;">
-  <h1 style="font-family:var(--font-head);font-size:2.4rem;font-weight:800;margin-bottom:.5rem;">
-    Get in <span style="color:var(--green-600);">Touch</span>
-  </h1>
-  <p style="color:var(--text-secondary);margin-bottom:2.5rem;">Have a question or need support? We're here to help.</p>
 
-  <div class="grid-2" style="margin-bottom:2rem;">
-    {% for icon, label, value in [('map-pin','Address','Cotonou, Littoral, Bénin'),('mail','Email','support@ecotrack.bj'),('phone','Phone','+229 21 30 00 00'),('clock','Hours','Mon–Fri 8:00 – 18:00')] %}
-    <div class="card"><div class="card-body" style="display:flex;gap:12px;align-items:flex-start;">
-      <div style="width:38px;height:38px;background:var(--green-100);color:var(--green-700);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <i data-lucide="{{ icon }}" class="icon-sm"></i>
+<!-- HERO -->
+<div style="background:linear-gradient(135deg,var(--green-700) 0%,var(--green-600) 100%);
+            color:#fff;padding:3.5rem 2rem 2.5rem;text-align:center;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;
+              background:rgba(255,255,255,.06);border-radius:50%;"></div>
+  <div style="position:relative;max-width:600px;margin:0 auto;">
+    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);
+                border:1px solid rgba(255,255,255,.25);border-radius:99px;
+                padding:5px 16px;font-size:13px;font-weight:600;margin-bottom:1rem;">
+      <i data-lucide="mail" style="width:13px;height:13px;"></i> Get In Touch
+    </div>
+    <h1 style="font-family:var(--font-head);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;
+               line-height:1.1;margin-bottom:.75rem;">
+      We'd Love to Hear From You
+    </h1>
+    <p style="opacity:.88;font-size:1rem;line-height:1.7;margin-bottom:1.5rem;">
+      Have a question, complaint or suggestion? Reach out and we'll get back to you within 24 hours.
+    </p>
+    <a href="{{ url_for('main.home') }}" style="display:inline-flex;align-items:center;gap:6px;
+       background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;
+       padding:9px 20px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;
+       text-decoration:none;">
+      <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back to Home
+    </a>
+  </div>
+</div>
+
+<div style="max-width:900px;margin:0 auto;padding:3rem 2rem 4rem;">
+
+  <!-- CONTACT INFO CARDS -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:3rem;">
+    {% for icon, label, value, color, bg in [
+        ('map-pin', 'Address',  '67 Morogbo Road, Ojo, Lagos, Nigeria', 'var(--green-700)',  'var(--green-50)'),
+        ('mail',    'Email',    'iidamuze19@gmail.com',                  'var(--blue-700)',   'var(--blue-50)'),
+        ('phone',   'Phone',    '+234 701 754 2456',                     'var(--amber-700)',  'var(--amber-50)'),
+        ('clock',   'Hours',    'Mon – Fri, 8:00 AM – 6:00 PM',         'var(--purple-600)', 'var(--purple-50)')
+    ] %}
+    <div style="background:{{ bg }};border:1px solid {{ color }}22;border-radius:var(--radius-lg);
+                padding:1.4rem;transition:all .2s;">
+      <div style="width:42px;height:42px;background:{{ color }};color:#fff;
+                  border-radius:var(--radius-sm);display:flex;align-items:center;
+                  justify-content:center;margin-bottom:.9rem;">
+        <i data-lucide="{{ icon }}" class="icon-md"></i>
       </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600;margin-bottom:2px;">{{ label }}</div>
-        <div class="font-semibold">{{ value }}</div>
-      </div>
-    </div></div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;
+                  color:{{ color }};font-weight:700;margin-bottom:5px;">{{ label }}</div>
+      <div style="font-weight:600;font-size:14px;color:var(--text-primary);line-height:1.5;">{{ value }}</div>
+    </div>
     {% endfor %}
   </div>
 
-  <div class="card">
-    <div class="card-header"><div class="card-title">Send a Message</div></div>
-    <div class="card-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Your Name</label>
-          <input type="text" class="form-control" placeholder="Full name">
+  <!-- FORM + MAP SIDE BY SIDE -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2.5rem;">
+
+    <!-- SEND MESSAGE FORM -->
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-xl);
+                box-shadow:var(--shadow-sm);overflow:hidden;">
+      <div style="background:var(--green-600);padding:1.2rem 1.5rem;">
+        <div style="font-family:var(--font-head);font-size:16px;font-weight:700;color:#fff;
+                    display:flex;align-items:center;gap:8px;">
+          <i data-lucide="send" style="width:16px;height:16px;"></i> Send a Message
+        </div>
+      </div>
+      <div style="padding:1.5rem;">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Your Name</label>
+            <input type="text" class="form-control" placeholder="Full name" id="c-name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" placeholder="you@example.com" id="c-email">
+          </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" placeholder="you@example.com">
+          <label class="form-label">Subject</label>
+          <select class="form-control" id="c-subject">
+            <option value="">— Select a topic —</option>
+            <option>Pickup not collected</option>
+            <option>Schedule a special pickup</option>
+            <option>Report a collector</option>
+            <option>Technical issue</option>
+            <option>Partnership inquiry</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea class="form-control" style="min-height:110px;"
+            placeholder="Describe your issue or question in detail…" id="c-msg"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="send-btn"
+          onclick="sendMsg()">
+          <i data-lucide="send" class="icon-sm"></i> Send Message
+        </button>
+        <div id="send-success" style="display:none;margin-top:1rem;background:var(--green-50);
+             border:1px solid var(--green-200);border-radius:var(--radius);padding:.9rem 1rem;
+             display:flex;align-items:center;gap:10px;font-size:13px;color:var(--green-800);">
+          <i data-lucide="check-circle" style="width:16px;height:16px;color:var(--green-600);"></i>
+          Message sent! We'll reply within 24 hours.
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Subject</label>
-        <input type="text" class="form-control" placeholder="How can we help?">
+    </div>
+
+    <!-- QUICK INFO + SOCIAL -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+
+      <!-- QUICK LINKS -->
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow-sm);">
+        <div style="font-family:var(--font-head);font-weight:700;font-size:15px;margin-bottom:1rem;
+                    display:flex;align-items:center;gap:8px;">
+          <i data-lucide="zap" style="width:16px;height:16px;color:var(--amber-500);"></i>
+          Quick Actions
+        </div>
+        {% for icon, label, url in [
+          ('calendar-plus', 'Schedule a Pickup',    '/resident/schedule'),
+          ('user-plus',     'Create an Account',    '/auth/register'),
+          ('log-in',        'Sign In',              '/auth/login'),
+          ('home',          'Go to Homepage',       '/'),
+        ] %}
+        <a href="{{ url }}" style="display:flex;align-items:center;gap:10px;padding:.6rem .5rem;
+           border-radius:var(--radius-sm);color:var(--text-secondary);font-size:13px;
+           font-weight:500;transition:all .15s;text-decoration:none;margin-bottom:2px;">
+          <div style="width:30px;height:30px;background:var(--green-50);color:var(--green-700);
+                      border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="{{ icon }}" style="width:14px;height:14px;"></i>
+          </div>
+          {{ label }}
+          <i data-lucide="chevron-right" style="width:13px;height:13px;margin-left:auto;"></i>
+        </a>
+        {% endfor %}
       </div>
-      <div class="form-group">
-        <label class="form-label">Message</label>
-        <textarea class="form-control" style="min-height:120px;" placeholder="Describe your issue…"></textarea>
+
+      <!-- RESPONSE TIME -->
+      <div style="background:var(--green-600);border-radius:var(--radius-lg);padding:1.4rem;color:#fff;">
+        <div style="font-family:var(--font-head);font-weight:700;font-size:15px;margin-bottom:.6rem;
+                    display:flex;align-items:center;gap:8px;">
+          <i data-lucide="clock" style="width:16px;height:16px;"></i> Response Times
+        </div>
+        {% for type, time in [('General enquiries','Within 24 hours'),('Technical issues','Within 4 hours'),('Missed pickups','Same day')] %}
+        <div style="display:flex;justify-content:space-between;font-size:13px;
+                    padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.15);">
+          <span style="opacity:.85;">{{ type }}</span>
+          <span style="font-weight:600;">{{ time }}</span>
+        </div>
+        {% endfor %}
       </div>
-      <button type="button" class="btn btn-primary btn-lg"
-        onclick="this.innerHTML='<i data-lucide=\'check\' style=\'width:16px;height:16px;\'></i> Message Sent!';lucide.createIcons();">
-        <i data-lucide="send" class="icon-sm"></i> Send Message
-      </button>
+
     </div>
   </div>
+
+  <!-- COPYRIGHT -->
+  <div style="text-align:center;padding-top:2rem;border-top:1px solid var(--border);
+              font-size:13px;color:var(--text-muted);">
+    &copy; {{ now.year }} EcoTrack. All rights reserved.
+    <span style="color:var(--green-600);font-weight:600;">BigWilly</span>
+  </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function sendMsg() {
+  const name = document.getElementById('c-name').value;
+  const email = document.getElementById('c-email').value;
+  const msg = document.getElementById('c-msg').value;
+  if (!name || !email || !msg) { alert('Please fill in your name, email and message.'); return; }
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader" style="width:16px;height:16px;"></i> Sending…';
+  lucide.createIcons();
+  setTimeout(() => {
+    btn.style.display = 'none';
+    document.getElementById('send-success').style.display = 'flex';
+    lucide.createIcons();
+  }, 1000);
+}
+</script>
 {% endblock %}

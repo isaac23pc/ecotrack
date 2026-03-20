@@ -156,3 +156,29 @@ def forgot_password():
         )
         return redirect(url_for('auth.login'))
     return render_template('auth/forgot_password.html')
+
+
+# ── admin password reset (CLI only — not exposed via web) ─────────────────────
+
+def reset_admin_password_cli(new_password: str = 'Admin@2026!'):
+    """
+    Run this from the Railway shell or local terminal to reset the admin password.
+    Usage:
+        python -c "from app.controllers.auth_controller import reset_admin_password_cli; reset_admin_password_cli('YourNewPassword')"
+    """
+    from app import create_app, db
+    import os
+    env = os.environ.get('FLASK_ENV', 'development')
+    app = create_app(env)
+    with app.app_context():
+        from app.models import User
+        from flask_bcrypt import Bcrypt
+        bcrypt = Bcrypt(app)
+        admin = User.query.filter_by(role='admin').first()
+        if not admin:
+            print('No admin found.')
+            return
+        admin.password_hash = bcrypt.generate_password_hash(new_password).decode('utf-8')
+        db.session.commit()
+        print(f'Admin password reset for: {admin.email}')
+        print(f'New password: {new_password}')

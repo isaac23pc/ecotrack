@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Database — never commit real data
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment secrets — NEVER commit this
+.env
+
+# Vercel
+.vercel/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Flask migrations (optional — remove this line if you want to commit migrations)
+migrations/
